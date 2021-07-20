@@ -1,5 +1,4 @@
 const OrderSrv = {};
-
 OrderSrv.generateOS = (order) => {
    let orderNumber = order.order_code + order.Ecommerce.tax_registry_number; 
    if (orderNumber.lenght > 20)
@@ -89,9 +88,7 @@ OrderSrv.generateOS = (order) => {
       });
 
       if (response.status == 200){
-         const { tracking, labels } = orderNumber.data.data;
-         
-         
+         return orderNumber.data.data;
       } else {
          console.log('Error')
       }
