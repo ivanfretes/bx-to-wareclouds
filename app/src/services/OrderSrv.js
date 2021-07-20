@@ -1,9 +1,9 @@
 const OrderSrv = {};
 
 OrderSrv.generateOS = (order) => {
-   let orderNumberStr = order.order_code + order.Ecommerce.tax_registry_number; 
-   if (orderNumberStr.lenght > 20)
-      orderNumberStr = orderNumberStr.substring(orderNumberStr.lenght - 20)
+   let orderNumber = order.order_code + order.Ecommerce.tax_registry_number; 
+   if (orderNumber.lenght > 20)
+      orderNumber = orderNumber.substring(orderNumber.lenght - 20)
   
 
    const body = {
