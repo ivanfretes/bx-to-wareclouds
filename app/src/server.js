@@ -3,12 +3,7 @@ const cors = require("cors");
 
 const app = express()
 
-// Middlewares
-app.use(cors({origin : '*'}));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// DB
+// -- DB --
 const db = require("./db.js");
 db.sequelize.sync();
 
@@ -18,6 +13,14 @@ db.sequelize.sync();
 });*/
 
 
+// -- Middlewares --
+app.use(cors({origin : '*'}));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+
+// -- ROUTES --
+
 app.get('/', (req, res) => {
    res.send('api v1');
 })
@@ -25,7 +28,6 @@ app.get('/', (req, res) => {
 app.use('/orders', require('./routes/orders')); 
 app.use('/service-orders', require('./routes/serviceOrders')); 
 app.use('/labels', require('./routes/labels')); 
-//app.use('/', require('./routes/suscribest')); 
 
 
 const PORT = process.env.PORT || 3334;
