@@ -1,3 +1,5 @@
+
+const express = require('express');
 const app = express();
 const router = express.Router();
 const { Op } = require("sequelize");
@@ -43,7 +45,7 @@ router.post('/', async (req, res) => {
    });
 
    return res.json({ data : order });
-})
+});
 
 // GET ALL ORDERS
 // Corrección filtrar por ecommerce_name
@@ -67,4 +69,4 @@ router.get('/', async (req, res) => {
 })
 
 
-module.exports = router
+module.exports = router;

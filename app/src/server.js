@@ -25,12 +25,13 @@ app.get('/', (req, res) => {
    res.send('api v1');
 })
 
+
 app.use('/orders', require('./routes/orders')); 
-app.use('/service-orders', require('./routes/serviceOrders')); 
-app.use('/labels', require('./routes/labels')); 
+//app.use('/service-orders', require('./routes/serviceOrders')); 
+//app.use('/labels', require('./routes/labels')); 
 
 
 const PORT = process.env.PORT || 3334;
 app.listen(PORT, () => {
-  console.log(`Example app listening at http://localhost:${PORT}`)
+  console.log(`App listening at http://localhost:${PORT}`)
 })
