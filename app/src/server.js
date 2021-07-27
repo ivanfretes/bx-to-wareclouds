@@ -4,7 +4,7 @@ const cors = require("cors");
 const app = express()
 
 // -- DB --
-const db = require("./db.js");
+const db = require("./db/models");
 db.sequelize.sync();
 
 // For develop
@@ -20,7 +20,6 @@ app.use(express.urlencoded({ extended: true }));
 
 
 // -- ROUTES --
-
 app.get('/', (req, res) => {
    res.send('api v1');
 })
