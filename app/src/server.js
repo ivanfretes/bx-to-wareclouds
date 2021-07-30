@@ -1,17 +1,12 @@
 const express = require('express')
 const cors = require("cors");
-
 const app = express()
+
+require('dotenv').config();
 
 // -- DB --
 const db = require("./db/models");
 db.sequelize.sync();
-
-// For develop
-/*db.sequelize.sync({ force: true }).then(() => {
-  console.log("Drop and re-sync db.");
-});*/
-
 
 // -- Middlewares --
 app.use(cors({origin : '*'}));
@@ -19,14 +14,18 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 
-// -- ROUTES --
+// -- Routes --
 app.get('/', (req, res) => {
    res.send('api v1');
 })
-
-
+app.get('/pull', (req, res) => {
+   console.log('@@@@@@@@@');
+   console.log(req);
+   console.log('@@@@@@@@@');
+   res.send('api v1');
+})
 app.use('/orders', require('./routes/orders')); 
-//app.use('/service-orders', require('./routes/serviceOrders')); 
+app.use('/service-orders', require('./routes/serviceOrders')); 
 //app.use('/labels', require('./routes/labels')); 
 
 

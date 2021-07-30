@@ -7,9 +7,12 @@ const {
 module.exports = (sequelize, DataTypes) => {
   class Order extends Model {
     static associate(models) {
-     const { Ecommerce, Warecloud } = models;
+     const { Ecommerce, Warecloud, OrderEvent, OrderExtraAttribute, City } = models;
      Order.belongsTo(Ecommerce, { foreignKey : 'id_ecommerce' });
      Order.belongsTo(Warecloud, { foreignKey : 'id_warecloud' });
+     Order.hasMany(OrderEvent, { foreignKey : 'id_order' });
+     Order.hasOne(OrderExtraAttribute, { foreignKey : 'id_order' });
+     Order.hasOne(City, { foreignKey : 'id_city' });
     }
   };
 

@@ -1,71 +1,59 @@
 const express = require('express');
 const router = express.Router();
 const Sequelize = require("sequelize");
-const { Order, Ecommerce, Warecloud } = require('../db/models');
+const { Order, Ecommerce, Warecloud, OrderEvent } = require('../db/models');
 const { Op } = Sequelize;
 const Joi = require('joi');
+const { Cities } = require('../constants')
+
 
 // Create a order
 router.post('/', async (req, res) => {
    const schema = Joi.object({
-      id_warecloud : Joi.number().default(null),
-      id_route : Joi.number().default(null),
-      first_name : Joi.number().default(null) ,
-      last_name : Joi.number().default(null),
-      email : Joi.number().default(null),
-      address : Joi.number().default(null),
-      address_detail : Joi.number().default(null),
-      address_extra_info : Joi.number().default(null),
-      id_city : Joi.number().default(null),
-      id_country : Joi.number().default(null),
-      phone : Joi.number().default(null)
+      id_warecloud : Joi.string().required(),
+      id_ecommerce : Joi.string().required(),
+      order_code : Joi.string().required(),
+      id_route : Joi.number().default(6),
+      first_name : Joi.string().default(null) ,
+      last_name : Joi.string().default(null),
+      email : Joi.string(),
+      address_extra_info : Joi.string().default(null),
+      id_country : Joi.number().default(0)
    });
 
-   const { value } = schema.validate(req.body);
-   //const order = await Order.create(value);
-   console.log(value);
+   try {;
+      const value = await schema.validateAsync(req.body);
+      const { id_warecloud, id_ecommerce } = value;
 
-   /*const {
-      id_warecloud,
-      id_route,
-      first_name,
-      last_name,
-      email,
-      address,
-      address_detail,
-      address_extra_info,
-      id_city,
-      id_country,
-      phone
-   } = req.body;
+      const warecloud = await Warecloud.findOne({
+          where: { id_warecloud } 
+      });
+      
+      if (warecloud == null)
+         throw "Warecloud no encontrado";
 
-   const schema = Joi.object({
-      name: "" , 
-      id_warecloud : ,
-      id_route : 6,
-      first_name,
-      last_name,
-      email,
-      address,
-      address_detail,
-      address_extra_info,
-      id_city,
-      id_country,
-      phone
-   })
+      const order = await Order.create({
+         ...value,
+         address : warecloud.address,
+         address_detail : warecloud.address_detail,
+         id_ecommerce,
+         id_warecloud,
+         id_city : warecloud.id_city,
+         phone : warecloud.phone,
+         id_status_order : 6
+      });
 
-   schema.validate(req.body);
-   // validation
-   Joi.object
-   
+      // Create an order event
+      const orderEvent = OrderEvent.create({ 
+         id_order : order.id,
+         id_status_order : 6
+      });
+      
+      return res.json({ data : order });
 
-   // Create an order event
-   const orderEvent = OrderEvent.create({ 
-      id_order : order.id,
-      id_status_order : 6
-   });*/
-
-   return res.json({ data : order });
+   } catch (error) {
+      return res.status(500).json({"error" : error });
+   }
 })
 
 // Get all the orders
@@ -79,20 +67,27 @@ router.get('/', async (req, res) => {
    })
 
    const { value } = schema.validate(req.query);
-   const { ecommerce_name, page, id_ecommerce, rows } = value;
+   const { ecommerce_name, page, rows } = value;
 
    let where = { 
       id_status_order : 6
    };
-   if (id_ecommerce != null) 
-      where.id_ecommerce = id_ecommerce;
+   if (ecommerce_name != null) 
+      where.id_ecommerce = ecommerce_name;
    
    const orders = await Order.findAll({
-      where : where,
-      attributes: {exclude: ['id']},
+      
+      attributes: [
+         'id_order', 
+         'order_code', 
+         'Ecommerce.ecommerce_name', 
+         'address', 'address_detail', 
+         'address_extra_info', 
+         'id_city'
+      ],
       include : [
          { model : Ecommerce },
-         { model :  Warecloud }
+         { model :  Warecloud },
       ],
       limits : {
          limits : rows, 

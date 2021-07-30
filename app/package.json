@@ -13,9 +13,11 @@
   "author": "Iván Fretes",
   "license": "ISC",
   "dependencies": {
+    "@google-cloud/storage": "^5.11.0",
     "axios": "^0.21.1",
     "chai": "^4.3.4",
     "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "joi": "^17.4.0",
     "mariadb": "^2.5.4",

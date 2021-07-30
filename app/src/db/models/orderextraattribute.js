@@ -22,6 +22,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       id_order : {
          type : DataTypes.INTEGER({ length : 11 }),
+         unique : true
       },
       tracking_code : {
          type : DataTypes.STRING(45),

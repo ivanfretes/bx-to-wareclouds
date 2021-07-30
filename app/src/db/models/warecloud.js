@@ -16,9 +16,8 @@ module.exports = (sequelize, DataTypes) => {
   Warecloud.init({
       id_warecloud: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: DataTypes.INTEGER
+        type: DataTypes.STRING(45)
       },
       password : DataTypes.STRING(200),
       first_name : {

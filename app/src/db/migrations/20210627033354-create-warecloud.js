@@ -4,9 +4,8 @@ module.exports = {
     await queryInterface.createTable('warecloud', {
       id_warecloud: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING(45)
       },
       password : Sequelize.STRING(200),
       first_name : {
