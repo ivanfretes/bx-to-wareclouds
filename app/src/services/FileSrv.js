@@ -1,5 +1,3 @@
 module.exports = {
-   convertBase64ToFile = () {
-      
-   }
-}
+   convertBase64ToFile: () => "",
+};
