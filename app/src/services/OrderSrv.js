@@ -11,8 +11,6 @@ module.exports = {
          if (orderNumber.lenght > 20)
             orderNumber = orderNumber.substring(orderNumber.lenght - 20);
 
-         const packages = [];
-
          const body = {
             printFormatCode: 4,
             orderNumber,
@@ -78,7 +76,7 @@ module.exports = {
          if (status !== 200) throw "OS Response Error (BX)";
 
          const serviceOrder = data.data;
-
+         console.log(serviceOrder);
          OrderExtraAttribute.create({
             id_order: order.id_order,
             tracking_code: serviceOrder.trackingNumber,

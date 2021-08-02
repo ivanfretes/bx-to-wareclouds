@@ -1,51 +1,83 @@
 const express = require("express");
 const router = express.Router();
-const { Op } = require("sequelize");
+const { Op, literal } = require("sequelize");
 
 const { generateOS, generateOrderEvent } = require("../services/OrderSrv");
 const { Order, Ecommerce, OrderExtraAttribute } = require("../db/models");
 const Joi = require("joi");
 
-// GENERATE OS for order valid
+// GENERATE OS for order valid and havent a tracking code
 router.post("/valid", async (req, res) => {
-   const orders = await Order.findAll({
-      where: {
-         id_status_order: process.env.WC_STATUS_ORDER_DEFAULT,
-      },
-      include: [
-         { model: Ecommerce },
-         {
-            model: OrderExtraAttribute,
-            require: false,
+   try {
+      const orders = await Order.findAll({
+         where: {
+            id_status_order: process.env.WC_STATUS_ORDER_DEFAULT,
+            [Op.all]: literal(
+               "0 = (SELECT COUNT(*) FROM order_extra_attribute WHERE id_order = `Order`.`id_order`)"
+            ),
          },
-      ],
-   });
+         include: [
+            {
+               model: Ecommerce,
+            },
+            {
+               model: OrderExtraAttribute,
+            },
+         ],
+      });
 
-   orders.forEach((order, index) => {
-      generateOS(order);
-   });
+      orders.forEach((order, index) => {
+         generateOS(order);
+      });
 
-   return res.send("Se generaron las ordenes");
+      return res.send({
+         status: "success",
+         message: "Se generaron las ordenes",
+      });
+   } catch (error) {
+      return res.status(500).json({ error });
+   }
 });
 
 // GENERATE OS for order selected
 router.post("/selected", async (req, res) => {
-   const { selected } = res.body;
-
-   const orders = await Order.findAll({
-      where: {
-         id_status_order: 6,
-         id: selected,
-      },
-      include: { Ecommerce },
-      include: { OrderExtraAttribute },
+   const schema = Joi.object({
+      selected: Joi.array().items(Joi.number()).required(),
    });
+   try {
+      const { value, error } = schema.validate(req.body);
+      if (error) throw error;
 
-   orders.forEach((order, index) => {
-      orderSrv.generateOS(order);
-   });
+      const { selected } = value;
+      const orders = await Order.findAll({
+         where: {
+            id_status_order: process.env.WC_STATUS_ORDER_DEFAULT,
+            id_order: [...selected],
+         },
+         include: [
+            {
+               model: Ecommerce,
+            },
+            {
+               model: OrderExtraAttribute,
+            },
+         ],
+      });
 
-   return res.send("Se generaron las ordenes");
+      if (orders == null) throw "No se encontraron Ordenes";
+
+      orders.forEach((order, index) => {
+         orderSrv.generateOS(order);
+      });
+
+      return res.send({
+         status: "success",
+         data: [],
+         message: "Se generaron las ordenes",
+      });
+   } catch (error) {
+      return res.status(500).json({ error });
+   }
 });
 
 router.post("/event-push", async (req, res) => {
