@@ -7,7 +7,10 @@ module.exports = {
             primaryKey: true,
             type: Sequelize.INTEGER,
          },
-         order_code: Sequelize.STRING(20),
+         order_code: {
+            unique: true,
+            type: Sequelize.STRING(20),
+         },
          id_ecommerce: {
             type: Sequelize.STRING(45),
          },

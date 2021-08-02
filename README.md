@@ -28,18 +28,21 @@ Integración de Blue Express a Wareclouds
 $ npx sequelize init
 ```
 
-### Ejecutar migraciones 
+### Crear nuevas migraciones y modelos nuevos
 ```sh 
 $ npx sequelize-cli model:generate --name ModelName --attributes name:string
 ```
 
-
-### Generar una migraciones y modelos nuevos 
+### Correr migraciones 
 
 ```sh 
 $ npm run db:migrate
 ```
 
+### Correr seeders
+```sh 
+$ npm run db:seed
+``
 
 
 ## API

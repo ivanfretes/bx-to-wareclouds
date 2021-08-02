@@ -9,6 +9,8 @@ module.exports = (sequelize, DataTypes) => {
        */
       static associate(models) {
          // define association here
+         const { StatusOrder } = models;
+         OrderEvent.hasOne(StatusOrder, { foreignKey: "id_status_order" });
       }
    }
    OrderEvent.init(

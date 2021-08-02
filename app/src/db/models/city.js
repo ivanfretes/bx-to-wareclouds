@@ -13,7 +13,12 @@ module.exports = (sequelize, DataTypes) => {
    }
    City.init(
       {
-         id_city: DataTypes.INTEGER,
+         id_city: {
+            allowNull: false,
+            autoIncrement: true,
+            primaryKey: true,
+            type: DataTypes.INTEGER,
+         },
          city_name: DataTypes.STRING,
       },
       {

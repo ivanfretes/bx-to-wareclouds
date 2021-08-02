@@ -2,11 +2,17 @@ const express = require("express");
 
 const router = express.Router();
 const Sequelize = require("sequelize");
-const { Order, Ecommerce, Warecloud, OrderEvent } = require("../db/models");
+const {
+   Order,
+   Ecommerce,
+   Warecloud,
+   OrderEvent,
+   City,
+   OrderExtraAttribute,
+} = require("../db/models");
 
-const { Op } = Sequelize;
+const { Op, col, literal } = Sequelize;
 const Joi = require("joi");
-const { Cities } = require("../constants");
 
 // Create a order
 router.post("/", async (req, res) => {
@@ -14,7 +20,7 @@ router.post("/", async (req, res) => {
       id_warecloud: Joi.string().required(),
       id_ecommerce: Joi.string().required(),
       order_code: Joi.string().required(),
-      id_route: Joi.number().default(6),
+      id_route: Joi.number().default(process.env.WC_ROLE_DEFAULT),
       first_name: Joi.string().default(null),
       last_name: Joi.string().default(null),
       email: Joi.string(),
@@ -46,12 +52,13 @@ router.post("/", async (req, res) => {
          id_warecloud,
          id_city: warecloud.id_city,
          phone: warecloud.phone,
-         id_status_order: process.env.WC_ORDER_STATE_DEFAULT,
+         id_status_order: process.env.WC_STATUS_ORDER_DEFAULT,
       });
 
       OrderEvent.create({
-         id_order: order.id,
-         id_status_order: process.env.WC_ORDER_STATE_DEFAULT,
+         id_order: order.id_order,
+         id_status_order: process.env.WC_STATUS_ORDER_DEFAULT,
+         id_role: process.env.WC_ROLE_DEFAULT,
       });
       return res.json({ data: order });
    } catch (error) {
@@ -63,38 +70,59 @@ router.post("/", async (req, res) => {
 router.get("/", async (req, res) => {
    const schema = Joi.object({
       ecommerce_name: Joi.string().default(null),
-      page: Joi.number().default(1),
-      id_ecommerce: Joi.string().default(null),
-      rows: Joi.number().default(15),
-      id_city: Joi.number().default(null),
+      page: Joi.number().default(1).min(1),
+      rows: Joi.number().default(15).min(1),
    });
 
-   const { value } = schema.validate(req.query);
-   const { ecommerce_name, page, rows } = value;
+   try {
+      const { value, error } = schema.validate(req.query);
+      if (error) throw error;
 
-   const where = {
-      id_status_order: process.env.WC_ORDER_STATE_DEFAULT,
-   };
-   if (ecommerce_name != null) where.id_ecommerce = ecommerce_name;
+      const { ecommerce_name, page, rows } = value;
 
-   const orders = await Order.findAll({
-      attributes: [
-         "id_order",
-         "order_code",
-         "Ecommerce.ecommerce_name",
-         "address",
-         "address_detail",
-         "address_extra_info",
-         "id_city",
-      ],
-      include: [{ model: Ecommerce }, { model: Warecloud }],
-      limits: {
-         limits: rows,
-         offset: (1 + rows) * page,
-      },
-   });
+      const where = {
+         id_status_order: process.env.WC_STATUS_ORDER_DEFAULT,
+         id_city: {
+            [Op.not]: process.env.WC_SANTIAGO_DEFAULT,
+         },
+      };
 
-   return res.json(orders);
+      if (ecommerce_name != null) where.id_ecommerce = ecommerce_name;
+
+      const orders = await Order.findAll({
+         where: {
+            ...where,
+            [Op.all]: literal(
+               "0 = (SELECT COUNT(*) FROM order_extra_attribute WHERE id_order = `Order`.`id_order`)"
+            ),
+         },
+         attributes: [
+            "id_order",
+            "order_code",
+            [col("Ecommerce.ecommerce_name"), "ecommerce_name"],
+            "address",
+            "address_detail",
+            "address_extra_info",
+            "id_city",
+            [col("City.city_name"), "city_name"],
+         ],
+         include: [
+            { model: Ecommerce, attributes: [] },
+            { model: City, attributes: [] },
+            { model: OrderExtraAttribute },
+         ],
+         limits: 5,
+         offset: rows * (page - 1),
+      });
+
+      return res.json({
+         data: orders,
+         current_page: page,
+         rows,
+      });
+   } catch (error) {
+      return res.status(500).json({ error });
+   }
 });
 
 module.exports = router;

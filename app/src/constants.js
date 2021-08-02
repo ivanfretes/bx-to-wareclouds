@@ -6,10 +6,9 @@ module.exports = {
       "BX-USERCODE": process.env.BX_USERCODE,
       "BX-CLIENT_ACCOUNT": process.env.BX_CLIENT_ACCOUNT,
    },
-   Cities: [
-      { id_city: 1, name: "Ciudad 1" },
-      { id_city: 2, name: "Ciudad 2 " },
-      { id_city: 3, name: "Ciudad 3" },
-      { id_city: 4, name: "Ciudad 4" },
-   ],
+   StatusEventList: {
+      DR: process.env.WC_STATUS_ORDER_DR,
+      DM: process.env.WC_STATUS_ORDER_DM,
+      DL: process.env.WC_STATUS_ORDER_DL,
+   },
 };

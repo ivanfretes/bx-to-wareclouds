@@ -21,7 +21,10 @@ module.exports = (sequelize, DataTypes) => {
             primaryKey: true,
             type: DataTypes.INTEGER,
          },
-         order_code: DataTypes.STRING(20),
+         order_code: {
+            unique: true,
+            type: DataTypes.STRING(20),
+         },
          id_ecommerce: {
             type: DataTypes.STRING(45),
          },
