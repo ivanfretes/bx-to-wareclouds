@@ -83,8 +83,6 @@ module.exports = {
             id_order: order.id_order,
             tracking_code: serviceOrder.trackingNumber,
          });
-
-         console.log(data);
       } catch (error) {
          console.log(error);
       }
@@ -92,7 +90,7 @@ module.exports = {
 
    generateOrderEvent: async (id_order, status_value) => {
       const numberStatus = StatusEventList[`${status_value}`];
-      if (numberStatus === undefined) return null;
+      if (numberStatus == undefined) return null;
 
       const orderEvent = await OrderEvent.create({
          id_status_order: numberStatus,

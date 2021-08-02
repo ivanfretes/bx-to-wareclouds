@@ -62,21 +62,24 @@ router.post("/event-push", async (req, res) => {
 
       const { trackingNumber, event } = value;
 
-      const order = await Order.findOne({
-         include: [
-            {
-               model: OrderExtraAttribute,
-               where: { tracking_code: trackingNumber },
-            },
-         ],
+      const orderExtra = await OrderExtraAttribute.findOne({
+         where: { tracking_code: trackingNumber },
       });
+      if (orderExtra == null) throw "Order no existe";
 
-      if (order == null) throw "Order no encontrado";
-
-      console.log("antes");
-      generateOrderEvent(order.id_order, event.codigo);
-      console.log("despuest");
-      if (orderEvent == undefined) throw "Codigo de Evento no definido";
+      const orderEvent = generateOrderEvent(orderExtra.id_order, event.codigo);
+      if (orderEvent == null) throw "Codigo de Evento no definido";
+      /*console.log("test");
+      const order = await Order.update(
+         {
+            id_status_order: 9,
+         },
+         {}
+      );
+      console.log("PRUEBA");
+      console.log(order);
+      //if (order == null) throw "Order no encontrado";
+      */
 
       return res.json({ message: "Order Event generado correctamente" });
    } catch (error) {

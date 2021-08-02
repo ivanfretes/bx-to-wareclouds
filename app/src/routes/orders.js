@@ -109,7 +109,6 @@ router.get("/", async (req, res) => {
          include: [
             { model: Ecommerce, attributes: [] },
             { model: City, attributes: [] },
-            { model: OrderExtraAttribute },
          ],
          limits: 5,
          offset: rows * (page - 1),
