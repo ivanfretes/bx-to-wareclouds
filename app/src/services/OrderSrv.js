@@ -1,5 +1,5 @@
 const axios = require("axios");
-const { Headers, StatusEventList } = require("../constants");
+const { Headers, StatusEventList, getPackages } = require("../constants");
 const { OrderExtraAttribute, OrderEvent } = require("../db/models");
 
 module.exports = {
@@ -10,6 +10,8 @@ module.exports = {
          let orderNumber = order.order_code + rutWihoutDv[0];
          if (orderNumber.lenght > 20)
             orderNumber = orderNumber.substring(orderNumber.lenght - 20);
+
+         const packages = [];
 
          const body = {
             printFormatCode: 4,
@@ -48,23 +50,7 @@ module.exports = {
                   name: "Direccion de Entrega",
                },
             },
-            packages: [
-               {
-                  weightUnit: "KG",
-                  lengthUnit: "CM",
-                  weight: 1,
-                  length: 1,
-                  width: 1,
-                  height: 1,
-                  quantity: 1,
-                  extras: [
-                     {
-                        name: "name_of_package",
-                        value: "Paquete X",
-                     },
-                  ],
-               },
-            ],
+            packages: [...getPackages(process.env.WC_PACKAGE_CANT)],
             notificationContacts: [
                {
                   contactType: "R",
@@ -105,17 +91,15 @@ module.exports = {
    },
 
    generateOrderEvent: async (id_order, status_value) => {
-      try {
-         const numberStatus = StatusEventList[`${status_value}`];
-         if (numberStatus === undefined) throw "Order Event No definido";
+      const numberStatus = StatusEventList[`${status_value}`];
+      if (numberStatus === undefined) return null;
 
-         const value = await OrderEvent.create({
-            id_status_order: numberStatus,
-            id_order,
-         });
-         return { OrderEvent };
-      } catch (error) {
-         return { error };
-      }
+      const orderEvent = await OrderEvent.create({
+         id_status_order: numberStatus,
+         id_order,
+         id_role: process.env.WC_ROLE_DEFAULT,
+      });
+
+      return orderEvent;
    },
 };

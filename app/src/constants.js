@@ -11,4 +11,24 @@ module.exports = {
       DM: process.env.WC_STATUS_ORDER_DM,
       DL: process.env.WC_STATUS_ORDER_DL,
    },
+   getPackages: (n_packages) => {
+      const packages = [];
+      for (let index = 0; index < n_packages; index++) {
+         packages.push({
+            weightUnit: "KG",
+            lengthUnit: "CM",
+            weight: process.env.WC_WEIGHT,
+            length: process.env.WC_LENGTH,
+            width: process.env.WC_WIDTH,
+            height: process.env.WC_HEIGHT,
+            quantity: process.env.WC_QUANTITY,
+            extras: [
+               {
+                  name: "name_of_package",
+                  value: `Paquete ${index + 1}`,
+               },
+            ],
+         });
+      }
+   },
 };

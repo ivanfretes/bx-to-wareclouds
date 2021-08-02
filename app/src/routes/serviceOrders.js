@@ -52,12 +52,12 @@ router.post("/event-push", async (req, res) => {
    const schema = Joi.object({
       trackingNumber: Joi.string().required(),
       event: Joi.object({
-         codigo: Joi.string().required(),
+         codigo: Joi.string().valid("DR", "DM", "DL").required(),
       }).required(),
    });
 
    try {
-      let { value, error } = schema.validate(req.body);
+      const { value, error } = schema.validate(req.body);
       if (error) throw error;
 
       const { trackingNumber, event } = value;
@@ -73,8 +73,10 @@ router.post("/event-push", async (req, res) => {
 
       if (order == null) throw "Order no encontrado";
 
-      orderEvent = generateOrderEvent(order.id_order, event.codigo);
-      if (error) throw error;
+      console.log("antes");
+      generateOrderEvent(order.id_order, event.codigo);
+      console.log("despuest");
+      if (orderEvent == undefined) throw "Codigo de Evento no definido";
 
       return res.json({ message: "Order Event generado correctamente" });
    } catch (error) {
