@@ -10,6 +10,9 @@ module.exports = {
          order_label_link: {
             type: Sequelize.STRING(255),
          },
+         label_raw: {
+            type: Sequelize.TEXT,
+         },
          expiration_date: {
             type: Sequelize.DATE,
          },

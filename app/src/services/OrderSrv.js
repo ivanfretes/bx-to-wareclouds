@@ -1,8 +1,18 @@
 const axios = require("axios");
 const { Headers, StatusEventList, getPackages } = require("../constants");
-const { OrderExtraAttribute, OrderEvent } = require("../db/models");
+const {
+   OrderExtraAttribute,
+   OrderEvent,
+   Label,
+   OrderLabel,
+} = require("../db/models");
+const { xmlToLabels } = require("./BXDocumentSrv");
 
 module.exports = {
+   /**
+    * Generate an Order Service
+    * @param {Order} order
+    */
    generateOS: async (order) => {
       try {
          const rut = order.Ecommerce.tax_registry_number;
@@ -12,7 +22,7 @@ module.exports = {
             orderNumber = orderNumber.substring(orderNumber.lenght - 20);
 
          const body = {
-            printFormatCode: 4,
+            printFormatCode: process.env.WC_ORDER_DOCUMENT_TYPE,
             orderNumber,
             references: [],
             serviceType: "EX",
@@ -23,7 +33,7 @@ module.exports = {
             extendedClaim: false,
             companyId: process.env.BX_COMPANY_ID,
             userName: process.env.BX_USERNAME,
-            comments: "Comentario de Prueba",
+            comments: "--",
             pickup: {
                location: {
                   stateId: 15,
@@ -66,26 +76,46 @@ module.exports = {
             ],
          };
 
-         // OrderExtraAttribute.create()
+         // Create de OS
          const { data, status } = await axios.post(
             `${process.env.BX_API}/bx-emission/v1`,
             JSON.stringify(body),
             { headers: Headers }
          );
 
-         if (status !== 200) throw "OS Response Error (BX)";
+         if (status !== 200) throw new Error("OS Response Error (BX)");
 
+         // Get the labels info from BX
          const serviceOrder = data.data;
-         console.log(serviceOrder);
          OrderExtraAttribute.create({
             id_order: order.id_order,
             tracking_code: serviceOrder.trackingNumber,
+         });
+
+         const { contenido } = serviceOrder.labels[0];
+         const labelsBx = xmlToLabels(contenido);
+
+         labelsBx.forEach(async (element) => {
+            const label = await Label.create({
+               label_raw: JSON.stringify(element),
+            }).dataValues;
+
+            OrderLabel.create({
+               id_label: label.id_label,
+               id_order: order.id_order,
+            });
          });
       } catch (error) {
          console.log(error);
       }
    },
 
+   /**
+    * Generate a Event to Orders
+    * @param {number} id_order
+    * @param {string} status_value
+    * @returns : OrderEvent
+    */
    generateOrderEvent: async (id_order, status_value) => {
       const numberStatus = StatusEventList[`${status_value}`];
       if (numberStatus == undefined) return null;

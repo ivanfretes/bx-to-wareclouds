@@ -8,22 +8,22 @@ module.exports = (sequelize, DataTypes) => {
        * The `models/index` file will call this method automatically.
        */
       static associate(models) {
-         // define association here
+         const { Order, Label } = models;
+         OrderLabel.belongsTo(Order, { foreignKey: "id_order" });
+         OrderLabel.belongsTo(Label, { foreignKey: "id_label" });
       }
    }
    OrderLabel.init(
       {
-         id: {
-            allowNull: false,
-            autoIncrement: true,
-            primaryKey: true,
-            type: DataTypes.INTEGER,
-         },
          id_label: {
             type: DataTypes.INTEGER({ length: 11 }),
+            primaryKey: true,
+            allowNull: false,
          },
          id_order: {
             type: DataTypes.INTEGER({ length: 11 }),
+            primaryKey: true,
+            allowNull: false,
          },
       },
       {

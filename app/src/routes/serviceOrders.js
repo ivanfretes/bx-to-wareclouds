@@ -6,7 +6,7 @@ const { generateOS, generateOrderEvent } = require("../services/OrderSrv");
 const { Order, Ecommerce, OrderExtraAttribute } = require("../db/models");
 const Joi = require("joi");
 
-// GENERATE OS for order valid and havent a tracking code
+// GENERATE OS for order valid and haven't a tracking code
 router.post("/valid", async (req, res) => {
    try {
       const orders = await Order.findAll({
@@ -26,7 +26,13 @@ router.post("/valid", async (req, res) => {
          ],
       });
 
-      orders.forEach((order, index) => {
+      if (orders.length === 0)
+         return res.status(418).json({
+            status: "error",
+            message: "No se encontraron ordenes para generar",
+         });
+
+      orders.forEach((order) => {
          generateOS(order);
       });
 
@@ -39,7 +45,7 @@ router.post("/valid", async (req, res) => {
    }
 });
 
-// GENERATE OS for order selected
+// GENERATE OS for order selected, valid and and haven't a tracking code
 router.post("/selected", async (req, res) => {
    const schema = Joi.object({
       selected: Joi.array().items(Joi.number()).required(),
@@ -53,6 +59,9 @@ router.post("/selected", async (req, res) => {
          where: {
             id_status_order: process.env.WC_STATUS_ORDER_DEFAULT,
             id_order: [...selected],
+            [Op.all]: literal(
+               "0 = (SELECT COUNT(*) FROM order_extra_attribute WHERE id_order = `Order`.`id_order`)"
+            ),
          },
          include: [
             {
@@ -64,15 +73,19 @@ router.post("/selected", async (req, res) => {
          ],
       });
 
-      if (orders == null) throw "No se encontraron Ordenes";
+      if (orders.length === 0) {
+         return res.status(418).json({
+            status: "error",
+            message: "No se encontraron ordenes para generar",
+         });
+      }
 
-      orders.forEach((order, index) => {
-         orderSrv.generateOS(order);
+      orders.forEach((order) => {
+         generateOS(order);
       });
 
-      return res.send({
+      return res.json({
          status: "success",
-         data: [],
          message: "Se generaron las ordenes",
       });
    } catch (error) {

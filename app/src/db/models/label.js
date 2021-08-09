@@ -25,6 +25,9 @@ module.exports = (sequelize, DataTypes) => {
          expiration_date: {
             type: DataTypes.DATE,
          },
+         label_raw: {
+            type: DataTypes.STRING,
+         },
       },
       {
          sequelize,

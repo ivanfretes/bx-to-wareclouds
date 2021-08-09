@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
          Order.belongsTo(Warecloud, { foreignKey: "id_warecloud" });
          Order.hasMany(OrderEvent, { foreignKey: "id_order" });
          Order.hasOne(OrderExtraAttribute, { foreignKey: "id_order" });
-         Order.hasOne(City, { foreignKey: "id_city" });
+         Order.belongsTo(City, { foreignKey: "id_city" });
       }
    }
 

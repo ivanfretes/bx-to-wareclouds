@@ -8,13 +8,12 @@ const {
    Warecloud,
    OrderEvent,
    City,
-   OrderExtraAttribute,
 } = require("../db/models");
 
 const { Op, col, literal } = Sequelize;
 const Joi = require("joi");
 
-// Create a order
+// Create an order
 router.post("/", async (req, res) => {
    const schema = Joi.object({
       id_warecloud: Joi.string().required(),
@@ -66,7 +65,7 @@ router.post("/", async (req, res) => {
    }
 });
 
-// Get all the orders
+// Get all the orders (paginated)
 router.get("/", async (req, res) => {
    const schema = Joi.object({
       ecommerce_name: Joi.string().default(null),
