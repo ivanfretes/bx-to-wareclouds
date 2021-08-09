@@ -5,6 +5,7 @@ const { Op, literal } = require("sequelize");
 const { generateOS, generateOrderEvent } = require("../services/OrderSrv");
 const { Order, Ecommerce, OrderExtraAttribute } = require("../db/models");
 const Joi = require("joi");
+const { parseString } = require("xml2js");
 
 // GENERATE OS for order valid and haven't a tracking code
 router.post("/valid", async (req, res) => {
@@ -93,7 +94,8 @@ router.post("/selected", async (req, res) => {
    }
 });
 
-router.post("/event-push", async (req, res) => {
+/*
+router.post("/event-push-json", async (req, res) => {
    const schema = Joi.object({
       trackingNumber: Joi.string().required(),
       event: Joi.object({
@@ -113,19 +115,53 @@ router.post("/event-push", async (req, res) => {
       if (orderExtra == null) throw "Order no existe";
 
       const orderEvent = generateOrderEvent(orderExtra.id_order, event.codigo);
-      if (orderEvent == null) throw "Codigo de Evento no definido";
-      /*console.log("test");
-      const order = await Order.update(
-         {
-            id_status_order: 9,
-         },
-         {}
-      );
-      console.log("PRUEBA");
-      console.log(order);
-      //if (order == null) throw "Order no encontrado";
-      */
+      
+      return res.json({ message: "Order Event generado correctamente" });
+   } catch (error) {
+      return res.status(500).json({ error });
+   }
+});
+*/
 
+router.post("/event-push", async (req, res) => {
+   const schema = Joi.object({
+      carrier_tracking_number: Joi.string().required(),
+      tracking_data: Joi.string().required(),
+   });
+
+   try {
+      const { value, error } = schema.validate(req.body);
+      if (error) throw error;
+
+      const { carrier_tracking_number, tracking_data } = value;
+
+      // Verify if exists the tracking code
+      const orderExtra = await OrderExtraAttribute.findOne({
+         where: { tracking_code: carrier_tracking_number },
+      });
+      if (orderExtra == null) throw "Order no existe";
+
+      let jsonDoc;
+      parseString(tracking_data, { mergeAttrs: true }, (err, result) => {
+         jsonDoc = JSON.stringify(result);
+      });
+      const jsonData = JSON.parse(jsonDoc);
+      const document =
+         jsonData["soap:Envelope"]["soap:Body"][0][
+            "ns3:responseObtenerDocumento"
+         ][0].listaDocumento[0].documento[0];
+
+      // Concepto que le asigna BX a eventos (pinchazo) es un arreglo de eventos,
+      // Siempre el ultimo es el primer elemento
+      const { pinchazo } = document.listaPinchazosNacionales[0];
+      const lastEvent = pinchazo[0];
+
+      const orderEvent = await generateOrderEvent(
+         orderExtra.id_order,
+         lastEvent.codigoTipo[0]
+      );
+
+      if (orderEvent == null) throw "Codigo no permitido";
       return res.json({ message: "Order Event generado correctamente" });
    } catch (error) {
       return res.status(500).json({ error });

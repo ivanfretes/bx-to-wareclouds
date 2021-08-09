@@ -98,7 +98,7 @@ module.exports = {
          labelsBx.forEach(async (element) => {
             const label = await Label.create({
                label_raw: JSON.stringify(element),
-            }).dataValues;
+            });
 
             OrderLabel.create({
                id_label: label.id_label,
