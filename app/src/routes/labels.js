@@ -2,6 +2,7 @@ const express = require("express");
 const {
    generateDocument,
    generateBarcode,
+   pdfCreate,
 } = require("../services/BXDocumentSrv");
 const router = express.Router();
 const { toCanvas, toBuffer } = require("bwip-js");
@@ -61,6 +62,7 @@ router.post("/generate", async (req, res) => {
                include: [{ model: OrderExtraAttribute }],
                where: {
                   id_warecloud,
+                  id_status_order: process.env.WC_STATUS_ORDER_DEFAULT,
                },
             },
          ],
@@ -68,11 +70,13 @@ router.post("/generate", async (req, res) => {
 
       const oLabels = await orderLabels.map((element) => element.dataValues);
       generateDocument(res, oLabels);
+      return res.json({
+         status: "success",
+         message: "Generado Correctamente",
+      });
    } catch (error) {
       return res.status(500).json({ error });
    }
 });
-
-router.get("/upload-pdf", async (req, res) => {});
 
 module.exports = router;

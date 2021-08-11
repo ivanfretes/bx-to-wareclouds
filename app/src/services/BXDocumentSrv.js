@@ -3,6 +3,7 @@ const pdf = require("html-pdf");
 const path = require("path");
 const nunjucks = require("nunjucks");
 const { toBuffer } = require("bwip-js");
+const CloudStorageSrv = require("./CloudStorageSrv");
 
 const BXDocumentSrv = {
    /**
@@ -50,8 +51,8 @@ const BXDocumentSrv = {
     */
    async generateDocument(res, orderLabels) {
       const labels = [];
+      const fileName = `${orderLabels[0].id_warecloud}_${orderLabels[0].tracking_code}`;
 
-      //console.log(orderLabels);
       for (let index = 0; index < orderLabels.length; index++) {
          const oLabel = orderLabels[index];
          const labelBx = JSON.parse(oLabel.label_raw);
@@ -97,8 +98,14 @@ const BXDocumentSrv = {
 
       BXDocumentSrv.pdfCreate(labels).toStream((err, stream) => {
          if (err) return res.send(err);
-         res.type("pdf");
-         stream.pipe(res);
+         //res.type("pdf");
+         //stream.pipe(res);
+
+         // Send the stream to google cloud storagte
+         const gcSrv = new CloudStorageSrv();
+         stream.pipe(
+            gcSrv.gcFile(`${process.env.WC_GCS_PDF_PATH}/${fileName}.pdf`)
+         );
       });
    },
 };

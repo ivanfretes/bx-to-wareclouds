@@ -14,10 +14,21 @@ class CloudStorageSrv {
       });
    }
 
-   uploadFile = () => {
-      this.storage.getBuckets().then((res) => {
-         console.log(res);
-      });
+   /**
+    *
+    * @param {string} fileName
+    * @returns
+    */
+   gcFile = (fileName) => {
+      const file = this.storage.bucket(this.bucketName).file(fileName);
+      return file
+         .createWriteStream({
+            resumable: false,
+            validation: false,
+            metadata: { "Cache-Control": "public, max-age=31536000" },
+         })
+         .on("error", (err) => console.log(err))
+         .on("finish", () => console.log("good"));
    };
 }
 

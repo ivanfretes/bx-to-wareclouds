@@ -94,34 +94,6 @@ router.post("/selected", async (req, res) => {
    }
 });
 
-/*
-router.post("/event-push-json", async (req, res) => {
-   const schema = Joi.object({
-      trackingNumber: Joi.string().required(),
-      event: Joi.object({
-         codigo: Joi.string().valid("DR", "DM", "DL").required(),
-      }).required(),
-   });
-
-   try {
-      const { value, error } = schema.validate(req.body);
-      if (error) throw error;
-
-      const { trackingNumber, event } = value;
-
-      const orderExtra = await OrderExtraAttribute.findOne({
-         where: { tracking_code: trackingNumber },
-      });
-      if (orderExtra == null) throw "Order no existe";
-
-      const orderEvent = generateOrderEvent(orderExtra.id_order, event.codigo);
-      
-      return res.json({ message: "Order Event generado correctamente" });
-   } catch (error) {
-      return res.status(500).json({ error });
-   }
-});
-*/
 
 router.post("/event-push", async (req, res) => {
    const schema = Joi.object({
